@@ -5,7 +5,8 @@ License: MIT
 
 Install:
 ========================
-copy gigya/config/gigya.php.default to app/config/gigya.php and fill out the details below.
+- copy the plugin into app/plugins/gigya
+- copy gigya/config/gigya.php.default to app/config/gigya.php and fill out the details below.
 
 app/config/gigya.php
 $config = array(
@@ -15,11 +16,14 @@ $config = array(
   )
 );
 
+- run the schema file into you database
+cake schema create -plugin gigya
+
 Setup:
 ========================
-Signup for a free Gigya account and configure all your social network apps to let gigya
-handle the connection/login/posting/etc...
-http://www.gigya.com/
+You'll need to signup for a free Gigya account and configure all your social networking apps to let gigya handle the connection/login/posting/etc.. callbacks.   Gigya will set up all your apps for free, but it will take ~1 week to have them do it for you.  I suggestion just doing it yourself.  It's easy, and they've written full tutorials on how to do it, complete with screenshots.
+
+Start Here: http://wiki.gigya.com/035_Socialize_Setup 
 
 
 Usage:
@@ -32,16 +36,46 @@ var $helpers = array('Gigya.Gigya');
 
 Load required scripts in the head, and use any of the built in gigya helper methods
 
-Example:
+Example Layout:
 ========================
- views/layouts/default.ctp
- <?= $gigya->loader(); ?>
- <?= $gigya->login(); ?>
+//views/layouts/default.ctp
+<html>
+<head>
+  <?= $gigya->loader(); ?>
+</head>
+<body>
+  <?php
+  //Pseudo code, check if user is logged in or not, usually via Auth. 
+  if(!$user_id_logged_in){
+    echo $gigya->login();
+  } else {
+    $html->link('Logout', array('plugin' => 'gigya', 'controller' => 'socialize', 'action' => 'logout'));
+  } 
+  ?>
+</body>
+</html>
  
 Customize the look and feel of the login/connect with tons of options, including custom 
 callbacks both inline (javascript) or through your CakePHP app (url redirects).
 For a full list of available options look at:
-http://wiki.gigya.com/030_API_reference/010_Client_API/020_Methods/socialize.login
+http://wiki.gigya.com/030_API_reference/010_Client_API/020_Methods/socialize.showLoginUI
+
+Some useful examples:
+========================
+//Load the widget in a container (default is a popup)
+<div id="login-container"></div>
+<?= $gigya->login(array('containerID' => 'login-container')); ?>
+
+//Only allow facebook, twitter, or linkedin logins/connect
+<?= $gigya->login(array('enabledProviders' => 'facebook,twitter,linkedin')); ?>
+
+//Allow everything EXCEPT a certain provicer
+<?= $gigya->login(array('disabledProviders' => 'myspace')); ?>
+
+//Set height and width and add a style
+//styles: standard (default), blue, fullLogo
+<?= $gigya->login(array('height' => '300', 'width' => 500', 'buttonsStyle' => 'fullLogo')); ?>
+
 
 Default Login Action:
 ========================
@@ -60,27 +94,62 @@ The login action does a few things based on different senarios.
    authenticate the user using the social network decided, then attempt to create the user
    based on the AuthComponent settings.
    
+Login Flow Chart visual representation:
+http://www.webtechnick.com/img/gigya_flow_chart_final.jpg
+   
 At anytime, the developer has access to callback functions in and around the login/connection process.
 All callbacks need to be defined in app_controller.php in the main app to work.
 
 
 Available Callbacks:
 ========================
-beforeGigyaLogin($user) //needs to return a $user_id
-  //handles the authenticated user in, if the function returns a valid $user_id
-  //the internal handle_user action will be shortcutted and it will proceed straight to linking the user_id
-  //to the gigya account.
+/**
+* hands the authenticated user in, if the function returns a 
+* valid $user_id the internal handle_user function will be
+* shortcutted proceeding straight to linking the user_id 
+* to Gigya
+*
+* @param authenticated social network user
+* @return mixed user_id or boolean false to proceed
+*/
+function beforeGigyaLogin($user){
+  //return valid user_id or false
+}
+
+/**
+* Preform some needed logic after a successful login
+*
+* @param authenticated social network user
+* @return void
+*/
+function afterGigyaLogin($user){
+  //Do something with the user if need be.
+}
+
+/**
+* Preform some needed logic before a logout
+*/
+function beforeGigyaLogout(){
+  //Do something...
+}
   
-afterGigyaLogin($user)
-  //preform some action after a successful login
-  
-beforeGigyaLogout()
-  //preform some needed logic before the logout process.
-  
-gigyaCreateUser($user) //needs to return a $user_id
-  //preform the logic to actually create a new user.  This lets the developer overwrite the guesswork nand
-  //introspection the plugin takes to create a new user account.
-  
+/**
+* Allow the developer to decide how to create the user
+* instead of the Gigya plugin guessing what to do
+* by introspection on the Auth Component
+*
+* Defining this callback is preferable to the plugin guessing 
+* how your users table is constructed.  Although the plugin
+* does a good job of creating a valid user for you, its
+* always nicer to do it yourself to be sure there are no 
+* errors.
+*
+* @param authenticated gigya user
+* @return mixed user_id of created user, or false to let plugin decide.
+*/
+function gigyaCreateUser($user){
+  //create the new user and return the created user_id;
+}  
   
 Upon a successful login, the user key will be saved and linked to their account.  The benefit of linking the 
 user_id to the gigya_uuid is you can use the GigyaApi to make gigya calls based on the user_id and the right thing 
