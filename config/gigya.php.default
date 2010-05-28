@@ -1,0 +1,13 @@
+<?php
+/**
+  * Gigya configuration file
+  *
+  * save the file to app/config/gigya.php
+  */
+$config = array(
+  'Gigya' => array(
+    'apiKey' => 'GIGYA API KEY',
+    'secret' => 'GIGYA SECRET KEY'
+  )
+);
+?>
