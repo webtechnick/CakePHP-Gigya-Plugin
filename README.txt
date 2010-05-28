@@ -2,6 +2,29 @@ Author: Nick Baker
 Requred: PHP 5.1.2+
 License: MIT
 
+Gigya CakePHP Plugin is funded and co-developed by http://flickevents.com.   Flick Events has been nice enough to allow me to open source the plugin for the CakePHP community.
+
+The Goal
+========================
+The goal of this plugin is to integrate Gigya's social networking completely with CakePHP Auth component.  This means, if everything is setup correctly (and the user allows it), you will be able to get detailed information about your users through all their social networks by using their Auth user_id.
+
+Example:
+//show all connected social networks for the logged in user
+$details = GigyaUtil::api('getUserInfo', array('uid' => $this->Auth->user('id')));
+
+On top of that, the plugin also acts as a *single click registration* through a user's social network.   Callbacks and overwrites are written within the framework of the plugin.  This allows the developer to fine tune any part of the login/logout/connect/user_creation through the use of the built in callbacks.
+
+At the end of the day, by implementing the Gigya Plugin, you are:
+- Allowing your users to link their site account to their social networks.
+- Allow simple one-click registration.
+- Gain detailed information about your user's friends, photos, status
+- Post status updates on behalf of your users
+- and much more...
+
+To review a full least of features, please review the Gigya site. http://www.gigya.com/ 
+
+Enough talk, lets get it going!
+
 
 Install:
 ========================
